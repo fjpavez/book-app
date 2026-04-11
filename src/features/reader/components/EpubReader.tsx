@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useWindowDimensions, View, StyleSheet } from 'react-native';
 import {
   Reader,
@@ -46,16 +46,32 @@ function EpubReaderInner({
   onPress,
 }: Props) {
   const { width, height } = useWindowDimensions();
-  const { addAnnotation, removeAnnotations } = useReader();
+  const { addAnnotation, removeAnnotationByCfi } = useReader();
 
-  // Re-render annotations when list changes
+  // Track rendered annotation CFIs so we can remove stale ones
+  const renderedCfisRef = useRef<Set<string>>(new Set());
+
+  // Sync epub highlights with annotations state
   useEffect(() => {
-    removeAnnotations('highlight');
+    const incoming = new Set(annotations.map((a) => a.position));
+
+    // Remove highlights no longer in the list
+    for (const cfi of renderedCfisRef.current) {
+      if (!incoming.has(cfi)) {
+        removeAnnotationByCfi(cfi);
+        renderedCfisRef.current.delete(cfi);
+      }
+    }
+
+    // Add new highlights
     for (const a of annotations) {
-      addAnnotation('highlight', a.position, { id: a.id }, {
-        fill: HIGHLIGHT_COLORS[a.color] ?? '#FFE082',
-        'fill-opacity': '0.4',
-      });
+      if (!renderedCfisRef.current.has(a.position)) {
+        addAnnotation('highlight', a.position, { id: a.id }, {
+          color: HIGHLIGHT_COLORS[a.color] ?? '#FFE082',
+          opacity: 0.4,
+        });
+        renderedCfisRef.current.add(a.position);
+      }
     }
   }, [annotations]);
 

@@ -1,9 +1,10 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, StyleSheet, StatusBar, Text } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { RootStackParamList } from '@core/navigation/types';
 import { READER_THEMES } from '@core/reader/themes';
-import { useReaderViewModel, TocItem } from './useReaderViewModel';
+import { useReaderViewModel, TocItem, PendingSelection } from './useReaderViewModel';
+import { useTtsViewModel } from './useTtsViewModel';
 import { EpubReader } from './components/EpubReader';
 import { PdfReader } from './components/PdfReader';
 import { MarkdownReader } from './components/MarkdownReader';
@@ -13,14 +14,17 @@ import { TableOfContents } from './components/TableOfContents';
 import { ColorPicker } from './components/ColorPicker';
 import { NoteEditor } from './components/NoteEditor';
 import { AnnotationsPanel } from './components/AnnotationsPanel';
+import { TtsControlBar } from './components/TtsControlBar';
 import { Annotation, HighlightColor } from '@domain/models';
-import { PendingSelection } from './useReaderViewModel';
 
 type Props = StackScreenProps<RootStackParamList, 'Reader'>;
 
 export function ReaderScreen({ route, navigation }: Props) {
   const { bookId } = route.params;
   const vm = useReaderViewModel(bookId);
+  const [ttsVisible, setTtsVisible] = useState(false);
+
+  const tts = useTtsViewModel(vm.book, vm.book?.readingPosition ?? null);
 
   if (!vm.book) {
     return (
@@ -59,7 +63,6 @@ export function ReaderScreen({ route, navigation }: Props) {
     [vm],
   );
 
-  // ColorPicker: user picked a color (with or without note)
   const handleColorSelect = useCallback(
     async (color: HighlightColor) => {
       if (!vm.pendingSelection) return;
@@ -73,17 +76,13 @@ export function ReaderScreen({ route, navigation }: Props) {
     [vm],
   );
 
-  // ColorPicker: user tapped "+ Nota" — open NoteEditor for new annotation
   const handleAddNoteFromPicker = useCallback(() => {
-    // keep pendingSelection alive, open note editor in "create" mode
-    // We store the intent by setting editingAnnotation to a sentinel null
-    // and use a separate flag via showNoteForNewAnnotation logic:
-    // simpler: re-use editingAnnotation with a placeholder that has no id
+    if (!vm.pendingSelection) return;
     vm.setEditingAnnotation({
       id: '',
       bookId: vm.book!.id,
-      position: vm.pendingSelection?.cfiRange ?? '',
-      selectedText: vm.pendingSelection?.selectedText ?? '',
+      position: vm.pendingSelection.cfiRange,
+      selectedText: vm.pendingSelection.selectedText,
       note: null,
       color: 'yellow',
       chapter: vm.currentLabel || null,
@@ -93,12 +92,10 @@ export function ReaderScreen({ route, navigation }: Props) {
     vm.setPendingSelection(null);
   }, [vm]);
 
-  // NoteEditor save
   const handleNoteSave = useCallback(
     async (note: string) => {
       if (!vm.editingAnnotation) return;
       if (vm.editingAnnotation.id === '') {
-        // Creating new annotation with note
         await vm.addAnnotation(
           vm.editingAnnotation.position,
           vm.editingAnnotation.selectedText,
@@ -107,20 +104,23 @@ export function ReaderScreen({ route, navigation }: Props) {
         );
         vm.setEditingAnnotation(null);
       } else {
-        // Updating existing annotation note
         await vm.updateAnnotationNote(vm.editingAnnotation.id, note);
       }
     },
     [vm],
   );
 
-  const isBookmarked = vm.bookmarks.some(
-    (b) => b.position === vm.book?.readingPosition,
-  );
+  const handleTtsToggle = useCallback(() => {
+    if (ttsVisible && tts.ttsState !== 'idle') {
+      tts.stop();
+    }
+    setTtsVisible((v) => !v);
+  }, [ttsVisible, tts]);
 
-  const noteEditorVisible = vm.editingAnnotation !== null;
-  const noteEditorSelectedText = vm.editingAnnotation?.selectedText ?? '';
-  const noteEditorInitialNote = vm.editingAnnotation?.note ?? '';
+  const isBookmarked = vm.bookmarks.some((b) => b.position === vm.book?.readingPosition);
+  const ttsActive = ttsVisible || tts.ttsState !== 'idle';
+  const supportsAnnotations = vm.book.format === 'epub';
+  const supportsTts = vm.book.format === 'epub' || vm.book.format === 'md';
 
   return (
     <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background }]}>
@@ -133,7 +133,7 @@ export function ReaderScreen({ route, navigation }: Props) {
         backgroundColor={colors.uiBackground}
       />
 
-      {/* Format-specific reader */}
+      {/* Format readers */}
       {vm.book.format === 'epub' && (
         <EpubReader
           src={vm.book.filePath}
@@ -168,25 +168,46 @@ export function ReaderScreen({ route, navigation }: Props) {
         />
       )}
 
-      {/* Overlays */}
+      {/* Toolbar */}
       <ReaderToolbar
         title={vm.book.title}
         currentLabel={vm.currentLabel}
         colors={colors}
         visible={vm.chromeVisible}
         isBookmarked={isBookmarked}
+        ttsActive={ttsActive}
         onBack={() => navigation.goBack()}
         onBookmark={vm.addBookmark}
         onAnnotations={() => vm.setAnnotationsPanelOpen(true)}
+        onTts={supportsTts ? handleTtsToggle : () => {}}
         onToc={() => vm.setTocOpen(true)}
         onSettings={() => vm.setSettingsPanelOpen(true)}
       />
+
+      {/* TTS control bar */}
+      {ttsVisible && supportsTts && (
+        <TtsControlBar
+          ttsState={tts.ttsState}
+          loading={tts.ttsLoading}
+          currentSentence={tts.currentSentence}
+          currentIndex={tts.currentIndex}
+          sentenceCount={tts.sentenceCount}
+          rate={tts.rate}
+          colors={colors}
+          onPlay={tts.play}
+          onPause={tts.pause}
+          onStop={() => { tts.stop(); setTtsVisible(false); }}
+          onNext={tts.next}
+          onPrev={tts.prev}
+          onRateChange={tts.changeRate}
+        />
+      )}
 
       <TableOfContents
         visible={vm.tocOpen}
         toc={vm.toc}
         colors={colors}
-        onSelect={(_href) => {/* epub navigation via ref — Phase 4 */}}
+        onSelect={(_href) => {}}
         onClose={() => vm.setTocOpen(false)}
       />
 
@@ -198,8 +219,8 @@ export function ReaderScreen({ route, navigation }: Props) {
         onClose={() => vm.setSettingsPanelOpen(false)}
       />
 
-      {/* Annotation overlays — only for epub */}
-      {vm.book.format === 'epub' && (
+      {/* Annotation overlays — only epub */}
+      {supportsAnnotations && (
         <>
           <ColorPicker
             visible={vm.pendingSelection !== null}
@@ -210,9 +231,9 @@ export function ReaderScreen({ route, navigation }: Props) {
           />
 
           <NoteEditor
-            visible={noteEditorVisible}
-            selectedText={noteEditorSelectedText}
-            initialNote={noteEditorInitialNote}
+            visible={vm.editingAnnotation !== null}
+            selectedText={vm.editingAnnotation?.selectedText ?? ''}
+            initialNote={vm.editingAnnotation?.note ?? ''}
             colors={colors}
             onSave={handleNoteSave}
             onCancel={() => vm.setEditingAnnotation(null)}
