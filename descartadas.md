@@ -4,29 +4,31 @@ Estas funcionalidades fueron evaluadas durante la fase de planificación y desca
 
 ---
 
-## Tienda integrada
-- Book Store para comprar libros y audiolibros
-- Historial de compras y descargas
-- **Motivo:** La app es open source. La gestión de contenido es responsabilidad del usuario.
+## Pendientes de redefinicion
 
----
+Las siguientes funcionalidades no se adoptan tal como existen en Apple Books, pero tampoco se descartan: se rediseñarán bajo un enfoque propio.
 
-## Diccionario y referencia
+### Diccionario y referencia
 - Definición de palabras (diccionario nativo)
 - Traducción de palabras o frases seleccionadas
 - Búsqueda de texto en Wikipedia y web
-- **Motivo:** Se evaluará una alternativa diferente al diccionario clásico.
+- **Estado:** Por definir — se evaluará una alternativa diferente al diccionario clásico.
 
----
-
-## Progreso y metas
+### Progreso y metas
 - Seguimiento de progreso por libro (porcentaje / páginas)
 - Metas diarias de lectura (minutos por día)
 - Streaks de lectura (racha diaria)
 - Meta anual de libros
 - Notificaciones y recordatorios de lectura
 - Year in Review
-- **Motivo:** Se diseñará un sistema de métricas propio que se ajuste mejor al perfil del usuario recurrente.
+- **Estado:** Por definir — se diseñará un sistema de métricas propio para el perfil del usuario recurrente.
+
+---
+
+## Tienda integrada
+- Book Store para comprar libros y audiolibros
+- Historial de compras y descargas
+- **Motivo:** La app es open source. La gestión de contenido es responsabilidad del usuario.
 
 ---
 
