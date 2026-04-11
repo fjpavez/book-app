@@ -9,10 +9,15 @@ import {
   SafeAreaView,
   ScrollView,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { ReadingStatus } from '@domain/models';
+import { RootStackParamList } from '@core/navigation/types';
 import { useLibraryViewModel, SortKey, ViewMode } from './useLibraryViewModel';
 import { BookCard, showBookActions } from './components/BookCard';
 import { EmptyLibrary } from './components/EmptyLibrary';
+
+type NavProp = StackNavigationProp<RootStackParamList>;
 
 const FILTERS: { label: string; value: ReadingStatus | 'all' }[] = [
   { label: 'Todos', value: 'all' },
@@ -30,6 +35,7 @@ const SORT_OPTIONS: { label: string; value: SortKey }[] = [
 
 export function LibraryScreen() {
   const vm = useLibraryViewModel();
+  const navigation = useNavigation<NavProp>();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -105,7 +111,7 @@ export function LibraryScreen() {
             <BookCard
               book={item}
               mode="grid"
-              onPress={() => {/* Phase 2: open reader */}}
+              onPress={(book) => navigation.navigate('Reader', { bookId: book.id })}
               onLongPress={() =>
                 showBookActions(item, vm.changeStatus, vm.deleteBook)
               }
@@ -120,7 +126,7 @@ export function LibraryScreen() {
             <BookCard
               book={item}
               mode="list"
-              onPress={() => {/* Phase 2: open reader */}}
+              onPress={(book) => navigation.navigate('Reader', { bookId: book.id })}
               onLongPress={() =>
                 showBookActions(item, vm.changeStatus, vm.deleteBook)
               }
