@@ -9,6 +9,9 @@ import {
   Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '@core/navigation/types';
 import { useSyncViewModel } from './useSyncViewModel';
 
 const ACCENT = '#2563eb';
@@ -32,6 +35,7 @@ function formatDate(ts: number | null): string {
 export function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const sync = useSyncViewModel();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   const confirmRestore = (provider: 'iCloud' | 'Google Drive', onConfirm: () => void) => {
     Alert.alert(
@@ -190,6 +194,24 @@ export function SettingsScreen() {
         </View>
       ) : null}
 
+      {/* ── Importar ── */}
+      <Text style={styles.sectionHeader}>IMPORTAR</Text>
+      <View style={styles.card}>
+        <TouchableOpacity
+          style={styles.navRow}
+          onPress={() => navigation.navigate('Calibre')}
+        >
+          <View style={styles.navRowContent}>
+            <Text style={styles.navRowIcon}>📚</Text>
+            <View style={styles.navRowText}>
+              <Text style={styles.cardTitle}>Calibre</Text>
+              <Text style={styles.cardSub}>Importa libros desde tu biblioteca de Calibre</Text>
+            </View>
+          </View>
+          <Text style={styles.navChevron}>›</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* ── Acerca de ── */}
       <Text style={styles.sectionHeader}>ACERCA DE</Text>
       <View style={styles.card}>
@@ -304,4 +326,14 @@ const styles = StyleSheet.create({
   },
   aboutLabel: { fontSize: 15, color: TEXT },
   aboutValue: { fontSize: 15, color: MUTED },
+  navRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  navRowContent: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  navRowIcon: { fontSize: 22 },
+  navRowText: { flex: 1 },
+  navChevron: { fontSize: 22, color: MUTED, fontWeight: '300' },
 });

@@ -42,6 +42,18 @@ Las siguientes funcionalidades no se adoptan tal como existen en Apple Books, pe
 - **Dropbox / OneDrive** — OAuth2, SDKs de terceros. Menor prioridad dado que Google Drive ya cubre el segmento de cloud comercial.
 - **Estado:** Descartados del alcance actual. Evaluar según demanda tras lanzar Fase 5 (iCloud + Google Drive).
 
+### Configuración pendiente: EXPO_PUBLIC_GOOGLE_CLIENT_ID
+- Requiere crear un proyecto en Google Cloud Console con OAuth 2.0 client ID para iOS.
+- El bundle ID del proyecto debe coincidir con el del client ID.
+- La variable `EXPO_PUBLIC_GOOGLE_CLIENT_ID` debe definirse en el entorno de build (`.env.local` o CI secrets) antes de compilar.
+- **Estado:** Pendiente de revisión y configuración antes del primer build de producción.
+
+### Integraciones externas pendientes (Fase 6b)
+- **Open Library (Internet Archive)** — API pública para metadata y descarga de libros de dominio público.
+- **Project Gutenberg** — más de 70.000 libros libres de derechos, API de búsqueda y descarga directa.
+- **Goodreads** — sincronización de lista de lectura y ratings (requiere evaluación de la API actual tras los cambios de 2020).
+- **Estado:** Descartados del alcance actual. Evaluar en Fase 6b tras estabilizar integración con Calibre.
+
 ---
 
 ## Accesibilidad

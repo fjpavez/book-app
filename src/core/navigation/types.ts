@@ -8,6 +8,7 @@ export type LibraryTabParamList = {
 export type RootStackParamList = {
   Main: NavigatorScreenParams<BottomTabParamList>;
   Reader: { bookId: string };
+  Calibre: undefined;
 };
 
 export type BottomTabParamList = {

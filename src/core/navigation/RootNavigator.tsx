@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { RootStackParamList } from './types';
 import { BottomTabNavigator } from './BottomTabNavigator';
 import { ReaderScreen } from '@features/reader/ReaderScreen';
+import { CalibreScreen } from '@features/calibre/CalibreScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -16,6 +17,11 @@ export function RootNavigator() {
           name="Reader"
           component={ReaderScreen}
           options={{ animation: 'slide_from_bottom' }}
+        />
+        <Stack.Screen
+          name="Calibre"
+          component={CalibreScreen}
+          options={{ animation: 'slide_from_right' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
