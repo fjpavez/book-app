@@ -37,6 +37,11 @@ Las siguientes funcionalidades no se adoptan tal como existen en Apple Books, pe
 - Handoff entre dispositivos
 - **Motivo:** Fuera de alcance por el momento. Posible incorporación en versiones futuras.
 
+### Proveedores cloud pendientes de evaluación (Fase 5b)
+- **WebDAV** — protocolo genérico compatible con Nextcloud, ownCloud y servidores propios. Sin OAuth, solo URL + credenciales. Prioridad: usuarios power-user / privacidad.
+- **Dropbox / OneDrive** — OAuth2, SDKs de terceros. Menor prioridad dado que Google Drive ya cubre el segmento de cloud comercial.
+- **Estado:** Descartados del alcance actual. Evaluar según demanda tras lanzar Fase 5 (iCloud + Google Drive).
+
 ---
 
 ## Accesibilidad
