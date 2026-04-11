@@ -15,9 +15,12 @@ interface Props {
   currentLabel: string;
   colors: ThemeColors;
   visible: boolean;
+  isBookmarked: boolean;
   onBack: () => void;
   onToc: () => void;
   onSettings: () => void;
+  onBookmark: () => void;
+  onAnnotations: () => void;
 }
 
 export function ReaderToolbar({
@@ -25,9 +28,12 @@ export function ReaderToolbar({
   currentLabel,
   colors,
   visible,
+  isBookmarked,
   onBack,
   onToc,
   onSettings,
+  onBookmark,
+  onAnnotations,
 }: Props) {
   const insets = useSafeAreaInsets();
 
@@ -60,6 +66,14 @@ export function ReaderToolbar({
       </View>
 
       <View style={styles.actions}>
+        <TouchableOpacity onPress={onBookmark} hitSlop={10} style={styles.actionBtn}>
+          <Text style={[styles.actionIcon, { color: isBookmarked ? colors.accent : colors.text }]}>
+            {isBookmarked ? '🔖' : '🏷️'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onAnnotations} hitSlop={10} style={styles.actionBtn}>
+          <Text style={[styles.actionIcon, { color: colors.text }]}>✏️</Text>
+        </TouchableOpacity>
         <TouchableOpacity onPress={onToc} hitSlop={10} style={styles.actionBtn}>
           <Text style={[styles.actionIcon, { color: colors.text }]}>☰</Text>
         </TouchableOpacity>
