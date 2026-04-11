@@ -52,6 +52,14 @@ export const annotationRepository = {
     await db.runAsync('DELETE FROM annotations WHERE id = ?', [id]);
   },
 
+  async getAll(): Promise<Annotation[]> {
+    const db = await getDatabase();
+    const rows = await db.getAllAsync<AnnotationRow>(
+      'SELECT * FROM annotations ORDER BY created_at ASC',
+    );
+    return rows.map(toAnnotation);
+  },
+
   async searchAll(query: string): Promise<Annotation[]> {
     const db = await getDatabase();
     const like = `%${query}%`;

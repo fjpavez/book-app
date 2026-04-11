@@ -32,6 +32,14 @@ export const bookmarkRepository = {
     await db.runAsync('DELETE FROM bookmarks WHERE id = ?', [id]);
   },
 
+  async getAll(): Promise<Bookmark[]> {
+    const db = await getDatabase();
+    const rows = await db.getAllAsync<BookmarkRow>(
+      'SELECT * FROM bookmarks ORDER BY created_at ASC',
+    );
+    return rows.map(toBookmark);
+  },
+
   async existsAtPosition(bookId: string, position: string): Promise<boolean> {
     const db = await getDatabase();
     const row = await db.getFirstAsync<{ count: number }>(
