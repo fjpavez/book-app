@@ -8,6 +8,30 @@ Estas funcionalidades fueron evaluadas durante la fase de planificación y desca
 
 Las siguientes funcionalidades no se adoptan tal como existen en Apple Books, pero tampoco se descartan: se rediseñarán bajo un enfoque propio.
 
+### 🔴 Prioritarios — Experiencia de lectura avanzada
+
+#### Auto-scroll con control de velocidad
+- Avance automático del texto a velocidad regulable por el usuario (píxeles/segundo o palabras/minuto)
+- Control deslizante para ajustar velocidad en tiempo real durante la lectura
+- Pausa automática al tocar la pantalla o al detectar inactividad visual
+- Aplica a: epub (modo scroll) y markdown. PDF requiere evaluación aparte.
+- **Estado:** Pendiente de implementación. Técnicamente directo sobre ScrollView.
+
+#### Detección de atención con cámara (ARKit Eye Tracking)
+- Usar `ARFaceTrackingConfiguration` de ARKit con la cámara TrueDepth (Face ID) para detectar si el usuario está mirando la pantalla
+- Integración con auto-scroll: pausar automáticamente cuando el usuario aparta la vista
+- Requiere permiso de cámara frontal y dispositivo con Face ID (iPhone X en adelante)
+- Requiere módulo nativo (Swift/Objective-C) o paquete React Native con binding a ARKit
+- **Estado:** Pendiente de exploración técnica. Alta complejidad nativa, alto valor diferencial.
+
+#### Bionic Reading y RSVP
+- **Bionic Reading:** pone en negrita los primeros caracteres de cada palabra para que el cerebro complete el resto, acelerando la velocidad de lectura. Se puede implementar procesando el texto HTML del epub antes de renderizarlo.
+- **RSVP (Rapid Serial Visual Presentation):** muestra palabras una a una a alta velocidad en el centro de la pantalla (estilo Spritz). Alternativa al auto-scroll para lectores veloces.
+- Ambas técnicas son complementarias; podrían ofrecerse como modos de lectura alternativos.
+- **Estado:** Pendiente de implementación. Bionic Reading sobre epub: procesamiento HTML en WebView. RSVP: extractor de texto existente (EpubTextExtractor) + overlay de palabra actual.
+
+---
+
 ### Diccionario y referencia
 - Definición de palabras (diccionario nativo)
 - Traducción de palabras o frases seleccionadas
