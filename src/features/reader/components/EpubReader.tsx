@@ -1,17 +1,36 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useWindowDimensions, View, StyleSheet } from 'react-native';
-import { Reader, ReaderProvider, useReader, Location, Section } from '@epubjs-react-native/core';
+import {
+  Reader,
+  ReaderProvider,
+  useReader,
+  Location,
+  Section,
+  Annotation as EpubAnnotation,
+} from '@epubjs-react-native/core';
 import { useFileSystem } from '@epubjs-react-native/file-system';
 import { ReaderSettings } from '@core/store/readerSlice';
 import { buildEpubThemeCSS } from '@core/reader/themes';
-import { TocItem } from '../useReaderViewModel';
+import { Annotation } from '@domain/models';
+import { TocItem, PendingSelection } from '../useReaderViewModel';
+
+const HIGHLIGHT_COLORS: Record<string, string> = {
+  yellow: '#FFE082',
+  green: '#A5D6A7',
+  blue: '#90CAF9',
+  pink: '#F48FB1',
+  orange: '#FFCC80',
+};
 
 interface Props {
   src: string;
   initialCfi: string | null;
   settings: ReaderSettings;
+  annotations: Annotation[];
   onLocationChange: (cfi: string, label: string) => void;
   onTocReady: (toc: TocItem[]) => void;
+  onTextSelected: (selection: PendingSelection) => void;
+  onAnnotationPress: (annotation: Annotation) => void;
   onPress: () => void;
 }
 
@@ -19,12 +38,42 @@ function EpubReaderInner({
   src,
   initialCfi,
   settings,
+  annotations,
   onLocationChange,
   onTocReady,
+  onTextSelected,
+  onAnnotationPress,
   onPress,
 }: Props) {
   const { width, height } = useWindowDimensions();
-  const { goToLocation } = useReader();
+  const { addAnnotation, removeAnnotationByCfi } = useReader();
+
+  // Track rendered annotation CFIs so we can remove stale ones
+  const renderedCfisRef = useRef<Set<string>>(new Set());
+
+  // Sync epub highlights with annotations state
+  useEffect(() => {
+    const incoming = new Set(annotations.map((a) => a.position));
+
+    // Remove highlights no longer in the list
+    for (const cfi of renderedCfisRef.current) {
+      if (!incoming.has(cfi)) {
+        removeAnnotationByCfi(cfi);
+        renderedCfisRef.current.delete(cfi);
+      }
+    }
+
+    // Add new highlights
+    for (const a of annotations) {
+      if (!renderedCfisRef.current.has(a.position)) {
+        addAnnotation('highlight', a.position, { id: a.id }, {
+          color: HIGHLIGHT_COLORS[a.color] ?? '#FFE082',
+          opacity: 0.4,
+        });
+        renderedCfisRef.current.add(a.position);
+      }
+    }
+  }, [annotations]);
 
   const themeCSS = buildEpubThemeCSS(
     settings.theme,
@@ -50,7 +99,6 @@ function EpubReaderInner({
           if (cfi) onLocationChange(cfi, label);
         }}
         onNavigationLoaded={(nav) => {
-          // Map epub.js navigation to our TocItem shape
           const mapItem = (item: {
             id: string;
             label: string;
@@ -64,9 +112,17 @@ function EpubReaderInner({
           });
           onTocReady(nav.toc.map(mapItem));
         }}
+        onSelected={(selectedText, cfiRange) => {
+          onTextSelected({ selectedText, cfiRange });
+        }}
+        onPressAnnotation={(epubAnnotation: EpubAnnotation) => {
+          const match = annotations.find((a) => a.position === epubAnnotation.cfiRange);
+          if (match) onAnnotationPress(match);
+        }}
         onPress={onPress}
         injectedJavascript={`
           document.body.style.cssText += '${themeCSS.replace(/\n/g, ' ')}';
+          true;
         `}
       />
     </View>

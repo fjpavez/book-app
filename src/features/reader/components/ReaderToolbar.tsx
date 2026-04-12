@@ -15,9 +15,14 @@ interface Props {
   currentLabel: string;
   colors: ThemeColors;
   visible: boolean;
+  isBookmarked: boolean;
+  ttsActive: boolean;
   onBack: () => void;
   onToc: () => void;
   onSettings: () => void;
+  onBookmark: () => void;
+  onAnnotations: () => void;
+  onTts: () => void;
 }
 
 export function ReaderToolbar({
@@ -25,9 +30,14 @@ export function ReaderToolbar({
   currentLabel,
   colors,
   visible,
+  isBookmarked,
+  ttsActive,
   onBack,
   onToc,
   onSettings,
+  onBookmark,
+  onAnnotations,
+  onTts,
 }: Props) {
   const insets = useSafeAreaInsets();
 
@@ -60,6 +70,19 @@ export function ReaderToolbar({
       </View>
 
       <View style={styles.actions}>
+        <TouchableOpacity onPress={onBookmark} hitSlop={10} style={styles.actionBtn}>
+          <Text style={[styles.actionIcon, { color: isBookmarked ? colors.accent : colors.text }]}>
+            {isBookmarked ? '🔖' : '🏷️'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onAnnotations} hitSlop={10} style={styles.actionBtn}>
+          <Text style={[styles.actionIcon, { color: colors.text }]}>✏️</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onTts} hitSlop={10} style={styles.actionBtn}>
+          <Text style={[styles.actionIcon, { color: ttsActive ? colors.accent : colors.text }]}>
+            🎧
+          </Text>
+        </TouchableOpacity>
         <TouchableOpacity onPress={onToc} hitSlop={10} style={styles.actionBtn}>
           <Text style={[styles.actionIcon, { color: colors.text }]}>☰</Text>
         </TouchableOpacity>
