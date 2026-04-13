@@ -49,5 +49,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>La cámara frontal se usa para detectar si estás mirando la pantalla y pausar el auto-scroll automáticamente. No se graba ni almacena ningún video.</string>
 </dict>
 </plist>

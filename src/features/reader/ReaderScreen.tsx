@@ -7,6 +7,7 @@ import { useReaderViewModel, TocItem, PendingSelection } from './useReaderViewMo
 import { useTtsViewModel } from './useTtsViewModel';
 import { useAutoScrollViewModel } from './useAutoScrollViewModel';
 import { useRsvpViewModel } from './useRsvpViewModel';
+import { useEyeTrackingViewModel } from './useEyeTrackingViewModel';
 import { EpubReader } from './components/EpubReader';
 import { PdfReader } from './components/PdfReader';
 import { MarkdownReader } from './components/MarkdownReader';
@@ -32,6 +33,10 @@ export function ReaderScreen({ route, navigation }: Props) {
   const autoScroll = useAutoScrollViewModel();
   const rsvp = useRsvpViewModel(vm.book, vm.book?.readingPosition ?? null);
   const [rsvpVisible, setRsvpVisible] = useState(false);
+
+  const eyeTracking = useEyeTrackingViewModel({
+    onLookAway: autoScroll.pause,
+  });
 
   if (!vm.book) {
     return (
@@ -249,7 +254,10 @@ export function ReaderScreen({ route, navigation }: Props) {
         visible={vm.settingsPanelOpen}
         settings={vm.settings}
         colors={colors}
+        eyeTrackingSupported={eyeTracking.supported}
+        eyeTrackingEnabled={eyeTracking.enabled}
         onUpdate={vm.updateSettings}
+        onEyeTrackingToggle={eyeTracking.toggle}
         onClose={() => vm.setSettingsPanelOpen(false)}
       />
 

@@ -23,7 +23,10 @@ interface Props {
   visible: boolean;
   settings: ReaderSettings;
   colors: ThemeColors;
+  eyeTrackingSupported: boolean;
+  eyeTrackingEnabled: boolean;
   onUpdate: (partial: Partial<ReaderSettings>) => void;
+  onEyeTrackingToggle: () => void;
   onClose: () => void;
 }
 
@@ -39,7 +42,16 @@ const SCROLL_MODES: { label: string; value: ReaderScrollMode }[] = [
   { label: 'Scroll', value: 'scroll' },
 ];
 
-export function ReaderSettingsPanel({ visible, settings, colors, onUpdate, onClose }: Props) {
+export function ReaderSettingsPanel({
+  visible,
+  settings,
+  colors,
+  eyeTrackingSupported,
+  eyeTrackingEnabled,
+  onUpdate,
+  onEyeTrackingToggle,
+  onClose,
+}: Props) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -149,7 +161,7 @@ export function ReaderSettingsPanel({ visible, settings, colors, onUpdate, onClo
           ))}
         </View>
 
-        {/* Bionic Reading */}
+        {/* Bionic Reading + Eye Tracking */}
         <Text style={[styles.sectionLabel, { color: colors.muted }]}>LECTURA</Text>
         <View style={[styles.row, styles.switchRow]}>
           <View style={styles.switchLabelGroup}>
@@ -165,6 +177,23 @@ export function ReaderSettingsPanel({ visible, settings, colors, onUpdate, onClo
             thumbColor="#fff"
           />
         </View>
+
+        {eyeTrackingSupported && (
+          <View style={[styles.row, styles.switchRow, { marginTop: 12 }]}>
+            <View style={styles.switchLabelGroup}>
+              <Text style={[styles.switchLabel, { color: colors.text }]}>ARKit Eye Tracking</Text>
+              <Text style={[styles.switchHint, { color: colors.muted }]}>
+                Pausa el auto-scroll cuando apartas la vista
+              </Text>
+            </View>
+            <Switch
+              value={eyeTrackingEnabled}
+              onValueChange={onEyeTrackingToggle}
+              trackColor={{ false: colors.uiBorder, true: colors.accent }}
+              thumbColor="#fff"
+            />
+          </View>
+        )}
       </View>
     </Modal>
   );

@@ -22,7 +22,8 @@ Las siguientes funcionalidades no se adoptan tal como existen en Apple Books, pe
 - Integración con auto-scroll: pausar automáticamente cuando el usuario aparta la vista
 - Requiere permiso de cámara frontal y dispositivo con Face ID (iPhone X en adelante)
 - Requiere módulo nativo (Swift/Objective-C) o paquete React Native con binding a ARKit
-- **Estado:** Pendiente de exploración técnica. Alta complejidad nativa, alto valor diferencial.
+- **Estado:** ✅ Implementado. `ARKitEyeTracking.swift` + bridge ObjC. Usa `ARSession` sin render (solo datos). Detecta atención combinando `lookAtPoint` (distancia al origen < 45cm) + blink shapes. Debounce 500ms. `EyeTrackingService.ts` + `useEyeTrackingViewModel`. Toggle en ReaderSettingsPanel (solo visible en dispositivos con TrueDepth). Pausa auto-scroll automáticamente al apartar la vista.
+- **Pendiente de build:** Los archivos `.swift` y `.m` deben agregarse manualmente al target `bookapptmp` en Xcode via "Add Files to Project".
 
 #### Bionic Reading y RSVP
 - **Bionic Reading:** pone en negrita los primeros caracteres de cada palabra para que el cerebro complete el resto, acelerando la velocidad de lectura. Se puede implementar procesando el texto HTML del epub antes de renderizarlo.
