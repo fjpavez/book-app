@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ScrollView,
   TouchableWithoutFeedback,
@@ -10,23 +10,49 @@ import Markdown from 'react-native-markdown-display';
 import { File } from 'expo-file-system';
 import { ReaderSettings } from '@core/store/readerSlice';
 import { READER_THEMES } from '@core/reader/themes';
+import { applyBionicMarkdown } from '@core/reader/bionicReading';
 
 interface Props {
   src: string;
   initialLine: number;
   settings: ReaderSettings;
+  autoScrollActive: boolean;
+  autoScrollPxPerSec: number;
   onScroll: (line: string) => void;
   onPress: () => void;
+  onAutoScrollPause: () => void;
 }
 
-export function MarkdownReader({ src, settings, onPress }: Props) {
+const INTERVAL_MS = 33; // ~30 fps
+
+export function MarkdownReader({
+  src,
+  settings,
+  autoScrollActive,
+  autoScrollPxPerSec,
+  onPress,
+  onAutoScrollPause,
+}: Props) {
   const [content, setContent] = useState<string | null>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollYRef = useRef(0);
   const colors = READER_THEMES[settings.theme];
 
   useEffect(() => {
     const file = new File(src);
     file.text().then(setContent).catch(() => setContent('# Error\nNo se pudo leer el archivo.'));
   }, [src]);
+
+  // Auto-scroll interval
+  useEffect(() => {
+    if (!autoScrollActive) return;
+    const pxPerInterval = (autoScrollPxPerSec * INTERVAL_MS) / 1000;
+    const id = setInterval(() => {
+      scrollYRef.current += pxPerInterval;
+      scrollRef.current?.scrollTo({ y: scrollYRef.current, animated: false });
+    }, INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [autoScrollActive, autoScrollPxPerSec]);
 
   const markdownStyles = {
     body: {
@@ -72,13 +98,25 @@ export function MarkdownReader({ src, settings, onPress }: Props) {
     );
   }
 
+  const displayContent = settings.bionicReading ? applyBionicMarkdown(content) : content;
+
   return (
-    <TouchableWithoutFeedback onPress={onPress}>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        if (autoScrollActive) onAutoScrollPause();
+        else onPress();
+      }}
+    >
       <ScrollView
+        ref={scrollRef}
         style={[StyleSheet.absoluteFill, { backgroundColor: colors.background }]}
         contentContainerStyle={styles.scrollContent}
+        scrollEventThrottle={16}
+        onScroll={(e) => {
+          scrollYRef.current = e.nativeEvent.contentOffset.y;
+        }}
       >
-        <Markdown style={markdownStyles}>{content}</Markdown>
+        <Markdown style={markdownStyles}>{displayContent}</Markdown>
       </ScrollView>
     </TouchableWithoutFeedback>
   );

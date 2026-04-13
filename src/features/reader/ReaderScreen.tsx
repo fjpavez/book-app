@@ -5,6 +5,8 @@ import { RootStackParamList } from '@core/navigation/types';
 import { READER_THEMES } from '@core/reader/themes';
 import { useReaderViewModel, TocItem, PendingSelection } from './useReaderViewModel';
 import { useTtsViewModel } from './useTtsViewModel';
+import { useAutoScrollViewModel } from './useAutoScrollViewModel';
+import { useRsvpViewModel } from './useRsvpViewModel';
 import { EpubReader } from './components/EpubReader';
 import { PdfReader } from './components/PdfReader';
 import { MarkdownReader } from './components/MarkdownReader';
@@ -15,6 +17,8 @@ import { ColorPicker } from './components/ColorPicker';
 import { NoteEditor } from './components/NoteEditor';
 import { AnnotationsPanel } from './components/AnnotationsPanel';
 import { TtsControlBar } from './components/TtsControlBar';
+import { AutoScrollControlBar } from './components/AutoScrollControlBar';
+import { RsvpOverlay } from './components/RsvpOverlay';
 import { Annotation, HighlightColor } from '@domain/models';
 
 type Props = StackScreenProps<RootStackParamList, 'Reader'>;
@@ -25,6 +29,9 @@ export function ReaderScreen({ route, navigation }: Props) {
   const [ttsVisible, setTtsVisible] = useState(false);
 
   const tts = useTtsViewModel(vm.book, vm.book?.readingPosition ?? null);
+  const autoScroll = useAutoScrollViewModel();
+  const rsvp = useRsvpViewModel(vm.book, vm.book?.readingPosition ?? null);
+  const [rsvpVisible, setRsvpVisible] = useState(false);
 
   if (!vm.book) {
     return (
@@ -121,6 +128,10 @@ export function ReaderScreen({ route, navigation }: Props) {
   const ttsActive = ttsVisible || tts.ttsState !== 'idle';
   const supportsAnnotations = vm.book.format === 'epub';
   const supportsTts = vm.book.format === 'epub' || vm.book.format === 'md';
+  const supportsAutoScroll =
+    (vm.book.format === 'epub' || vm.book.format === 'md') &&
+    vm.settings.scrollMode === 'scroll';
+  const supportsRsvp = vm.book.format === 'epub' || vm.book.format === 'md';
 
   return (
     <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.background }]}>
@@ -140,11 +151,14 @@ export function ReaderScreen({ route, navigation }: Props) {
           initialCfi={vm.book.readingPosition}
           settings={vm.settings}
           annotations={vm.annotations}
+          autoScrollActive={autoScroll.active}
+          autoScrollPxPerSec={autoScroll.pxPerSec}
           onLocationChange={handleLocationChange}
           onTocReady={handleTocReady}
           onTextSelected={handleTextSelected}
           onAnnotationPress={handleAnnotationPress}
           onPress={vm.toggleChrome}
+          onAutoScrollPause={autoScroll.pause}
         />
       )}
 
@@ -163,8 +177,11 @@ export function ReaderScreen({ route, navigation }: Props) {
           src={vm.book.filePath}
           initialLine={0}
           settings={vm.settings}
+          autoScrollActive={autoScroll.active}
+          autoScrollPxPerSec={autoScroll.pxPerSec}
           onScroll={(line) => vm.savePosition(line)}
           onPress={vm.toggleChrome}
+          onAutoScrollPause={autoScroll.pause}
         />
       )}
 
@@ -176,10 +193,15 @@ export function ReaderScreen({ route, navigation }: Props) {
         visible={vm.chromeVisible}
         isBookmarked={isBookmarked}
         ttsActive={ttsActive}
+        autoScrollAvailable={supportsAutoScroll}
+        autoScrollActive={autoScroll.active}
+        rsvpAvailable={supportsRsvp}
         onBack={() => navigation.goBack()}
         onBookmark={vm.addBookmark}
         onAnnotations={() => vm.setAnnotationsPanelOpen(true)}
         onTts={supportsTts ? handleTtsToggle : () => {}}
+        onAutoScroll={autoScroll.toggle}
+        onRsvp={() => setRsvpVisible(true)}
         onToc={() => vm.setTocOpen(true)}
         onSettings={() => vm.setSettingsPanelOpen(true)}
       />
@@ -200,6 +222,18 @@ export function ReaderScreen({ route, navigation }: Props) {
           onNext={tts.next}
           onPrev={tts.prev}
           onRateChange={tts.changeRate}
+        />
+      )}
+
+      {supportsAutoScroll && (autoScroll.active || vm.chromeVisible) && (
+        <AutoScrollControlBar
+          active={autoScroll.active}
+          speed={autoScroll.speed}
+          speedLabel={autoScroll.speedLabel}
+          colors={colors}
+          onToggle={autoScroll.toggle}
+          onDecreaseSpeed={autoScroll.decreaseSpeed}
+          onIncreaseSpeed={autoScroll.increaseSpeed}
         />
       )}
 
@@ -255,6 +289,26 @@ export function ReaderScreen({ route, navigation }: Props) {
         onExport={vm.exportAnnotations}
         onClose={() => vm.setAnnotationsPanelOpen(false)}
       />
+
+      {supportsRsvp && (
+        <RsvpOverlay
+          visible={rsvpVisible}
+          rsvpState={rsvp.rsvpState}
+          currentWord={rsvp.currentWord}
+          currentIndex={rsvp.currentIndex}
+          wordCount={rsvp.wordCount}
+          wpm={rsvp.wpm}
+          minWpm={rsvp.minWpm}
+          maxWpm={rsvp.maxWpm}
+          colors={colors}
+          onPlay={rsvp.play}
+          onPause={rsvp.pause}
+          onStop={rsvp.stop}
+          onIncreaseWpm={rsvp.increaseWpm}
+          onDecreaseWpm={rsvp.decreaseWpm}
+          onClose={() => setRsvpVisible(false)}
+        />
+      )}
     </View>
   );
 }

@@ -11,6 +11,7 @@ import {
 import { useFileSystem } from '@epubjs-react-native/file-system';
 import { ReaderSettings } from '@core/store/readerSlice';
 import { buildEpubThemeCSS } from '@core/reader/themes';
+import { BIONIC_READING_JS } from '@core/reader/bionicReading';
 import { Annotation } from '@domain/models';
 import { TocItem, PendingSelection } from '../useReaderViewModel';
 
@@ -27,11 +28,14 @@ interface Props {
   initialCfi: string | null;
   settings: ReaderSettings;
   annotations: Annotation[];
+  autoScrollActive: boolean;
+  autoScrollPxPerSec: number;
   onLocationChange: (cfi: string, label: string) => void;
   onTocReady: (toc: TocItem[]) => void;
   onTextSelected: (selection: PendingSelection) => void;
   onAnnotationPress: (annotation: Annotation) => void;
   onPress: () => void;
+  onAutoScrollPause: () => void;
 }
 
 function EpubReaderInner({
@@ -39,11 +43,14 @@ function EpubReaderInner({
   initialCfi,
   settings,
   annotations,
+  autoScrollActive,
+  autoScrollPxPerSec,
   onLocationChange,
   onTocReady,
   onTextSelected,
   onAnnotationPress,
   onPress,
+  onAutoScrollPause,
 }: Props) {
   const { width, height } = useWindowDimensions();
   const { addAnnotation, removeAnnotationByCfi } = useReader();
@@ -122,8 +129,25 @@ function EpubReaderInner({
         onPress={onPress}
         injectedJavascript={`
           document.body.style.cssText += '${themeCSS.replace(/\n/g, ' ')}';
+          ${settings.bionicReading ? BIONIC_READING_JS : ''}
+          (function(){
+            if(window.__autoScrollInterval) clearInterval(window.__autoScrollInterval);
+            ${autoScrollActive
+              ? `var _px = ${(autoScrollPxPerSec * 33) / 1000};
+                 window.__autoScrollInterval = setInterval(function(){ window.scrollBy(0,_px); },33);
+                 document.addEventListener('touchstart', function(){
+                   clearInterval(window.__autoScrollInterval);
+                   window.__autoScrollInterval = null;
+                   window.ReactNativeWebView && window.ReactNativeWebView.postMessage('autoscroll:pause');
+                 },{once:true});`
+              : ''
+            }
+          })();
           true;
         `}
+        onMessage={(e) => {
+          if (e.nativeEvent.data === 'autoscroll:pause') onAutoScrollPause();
+        }}
       />
     </View>
   );

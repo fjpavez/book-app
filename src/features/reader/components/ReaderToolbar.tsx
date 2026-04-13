@@ -17,12 +17,17 @@ interface Props {
   visible: boolean;
   isBookmarked: boolean;
   ttsActive: boolean;
+  autoScrollAvailable: boolean;
+  autoScrollActive: boolean;
+  rsvpAvailable: boolean;
   onBack: () => void;
   onToc: () => void;
   onSettings: () => void;
   onBookmark: () => void;
   onAnnotations: () => void;
   onTts: () => void;
+  onAutoScroll: () => void;
+  onRsvp: () => void;
 }
 
 export function ReaderToolbar({
@@ -32,12 +37,17 @@ export function ReaderToolbar({
   visible,
   isBookmarked,
   ttsActive,
+  autoScrollAvailable,
+  autoScrollActive,
+  rsvpAvailable,
   onBack,
   onToc,
   onSettings,
   onBookmark,
   onAnnotations,
   onTts,
+  onAutoScroll,
+  onRsvp,
 }: Props) {
   const insets = useSafeAreaInsets();
 
@@ -83,6 +93,18 @@ export function ReaderToolbar({
             🎧
           </Text>
         </TouchableOpacity>
+        {autoScrollAvailable && (
+          <TouchableOpacity onPress={onAutoScroll} hitSlop={10} style={styles.actionBtn}>
+            <Text style={[styles.actionIcon, { color: autoScrollActive ? colors.accent : colors.text }]}>
+              ↓↓
+            </Text>
+          </TouchableOpacity>
+        )}
+        {rsvpAvailable && (
+          <TouchableOpacity onPress={onRsvp} hitSlop={10} style={styles.actionBtn}>
+            <Text style={[styles.actionIcon, { color: colors.text }]}>⚡</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity onPress={onToc} hitSlop={10} style={styles.actionBtn}>
           <Text style={[styles.actionIcon, { color: colors.text }]}>☰</Text>
         </TouchableOpacity>

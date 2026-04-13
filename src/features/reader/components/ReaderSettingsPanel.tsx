@@ -4,6 +4,7 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
+  Switch,
   StyleSheet,
   Modal,
 } from 'react-native';
@@ -147,6 +148,23 @@ export function ReaderSettingsPanel({ visible, settings, colors, onUpdate, onClo
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* Bionic Reading */}
+        <Text style={[styles.sectionLabel, { color: colors.muted }]}>LECTURA</Text>
+        <View style={[styles.row, styles.switchRow]}>
+          <View style={styles.switchLabelGroup}>
+            <Text style={[styles.switchLabel, { color: colors.text }]}>Bionic Reading</Text>
+            <Text style={[styles.switchHint, { color: colors.muted }]}>
+              Resalta las primeras letras de cada palabra
+            </Text>
+          </View>
+          <Switch
+            value={settings.bionicReading}
+            onValueChange={(v) => onUpdate({ bionicReading: v })}
+            trackColor={{ false: colors.uiBorder, true: colors.accent }}
+            thumbColor="#fff"
+          />
+        </View>
       </View>
     </Modal>
   );
@@ -208,4 +226,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modeChipText: { fontSize: 13, fontWeight: '500' },
+  switchRow: {
+    justifyContent: 'space-between',
+    flexWrap: 'nowrap',
+  },
+  switchLabelGroup: { flex: 1, marginRight: 12 },
+  switchLabel: { fontSize: 14, fontWeight: '500' },
+  switchHint: { fontSize: 12, marginTop: 2 },
 });

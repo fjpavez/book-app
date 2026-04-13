@@ -15,7 +15,7 @@ Las siguientes funcionalidades no se adoptan tal como existen en Apple Books, pe
 - Control deslizante para ajustar velocidad en tiempo real durante la lectura
 - Pausa automática al tocar la pantalla o al detectar inactividad visual
 - Aplica a: epub (modo scroll) y markdown. PDF requiere evaluación aparte.
-- **Estado:** Pendiente de implementación. Técnicamente directo sobre ScrollView.
+- **Estado:** ✅ Implementado. `useAutoScrollViewModel` + `AutoScrollControlBar`. MarkdownReader: ScrollView ref + setInterval. EpubReader: injectedJavascript con postMessage para pause-on-touch. Botón ↓↓ en toolbar (solo visible en modo scroll).
 
 #### Detección de atención con cámara (ARKit Eye Tracking)
 - Usar `ARFaceTrackingConfiguration` de ARKit con la cámara TrueDepth (Face ID) para detectar si el usuario está mirando la pantalla
@@ -28,7 +28,7 @@ Las siguientes funcionalidades no se adoptan tal como existen en Apple Books, pe
 - **Bionic Reading:** pone en negrita los primeros caracteres de cada palabra para que el cerebro complete el resto, acelerando la velocidad de lectura. Se puede implementar procesando el texto HTML del epub antes de renderizarlo.
 - **RSVP (Rapid Serial Visual Presentation):** muestra palabras una a una a alta velocidad en el centro de la pantalla (estilo Spritz). Alternativa al auto-scroll para lectores veloces.
 - Ambas técnicas son complementarias; podrían ofrecerse como modos de lectura alternativos.
-- **Estado:** Pendiente de implementación. Bionic Reading sobre epub: procesamiento HTML en WebView. RSVP: extractor de texto existente (EpubTextExtractor) + overlay de palabra actual.
+- **Estado:** ✅ Implementado. Bionic Reading: `bionicReading.ts` con `applyBionicMarkdown` (markdown) + `BIONIC_READING_JS` inyectado en WebView (epub). Toggle Switch en ReaderSettingsPanel. RSVP: `useRsvpViewModel` + `RsvpOverlay` (modal full-screen), 100–600 wpm, usa EpubTextExtractor. Botón ⚡ en toolbar.
 
 ---
 

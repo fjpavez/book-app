@@ -10,6 +10,7 @@ export interface ReaderSettings {
   scrollMode: ReaderScrollMode;
   lineHeight: number;
   marginHorizontal: number;
+  bionicReading: boolean;
 }
 
 export interface ReaderSlice {
@@ -26,6 +27,7 @@ const defaultSettings: ReaderSettings = {
   scrollMode: 'paginated',
   lineHeight: 1.6,
   marginHorizontal: 20,
+  bionicReading: false,
 };
 
 export const createReaderSlice = (
